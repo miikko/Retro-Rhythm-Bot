@@ -8,7 +8,12 @@ const getAudioStreamFromUrl = (url) => {
 const getVideoUrlFromName = async (name) => {
   const encodedName = encodeURIComponent(name)
   const resultsUrl = `https://www.youtube.com/results?search_query=${encodedName}`
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+  const browser = await puppeteer.launch({
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
+  })
   const page = await browser.newPage()
   await page.goto(resultsUrl)
   let videoUrl = 'https://www.youtube.com'
@@ -35,7 +40,12 @@ const isPlaylist = (url) => {
 
 const getNextPlaylistVideoUrl = async (url) => {
   const videoIndex = new URL(url).searchParams.get('index') || 1
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+  const browser = await puppeteer.launch({
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
+  })
   const page = await browser.newPage()
   await page.goto(url)
   await page.waitForSelector('ytd-playlist-panel-video-renderer')
@@ -60,7 +70,12 @@ const getUrlsFromPlaylist = async (numOfUrls, playlistUrl) => {
   } else {
     startIndex = 0
   }
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+  const browser = await puppeteer.launch({
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
+  })
   const page = await browser.newPage()
   await page.goto(playlistUrl)
   await page.waitForSelector('ytd-playlist-panel-video-renderer')
@@ -78,7 +93,6 @@ const getUrlsFromPlaylist = async (numOfUrls, playlistUrl) => {
       return urlEndings
     }, { startIndex, numOfUrls })
     await browser.close()
-    console.log(results)
     const baseUrl = 'https://www.youtube.com'
     return results.map(result => baseUrl.concat(result))
   } catch (exception) {
