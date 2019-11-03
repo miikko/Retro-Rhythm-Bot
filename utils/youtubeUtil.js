@@ -8,7 +8,7 @@ const getAudioStreamFromUrl = (url) => {
 const getVideoUrlFromName = async (name) => {
   const encodedName = encodeURIComponent(name)
   const resultsUrl = `https://www.youtube.com/results?search_query=${encodedName}`
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
   const page = await browser.newPage()
   await page.goto(resultsUrl)
   let videoUrl = 'https://www.youtube.com'
@@ -35,7 +35,7 @@ const isPlaylist = (url) => {
 
 const getNextPlaylistVideoUrl = async (url) => {
   const videoIndex = new URL(url).searchParams.get('index') || 1
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
   const page = await browser.newPage()
   await page.goto(url)
   await page.waitForSelector('ytd-playlist-panel-video-renderer')
@@ -60,7 +60,7 @@ const getUrlsFromPlaylist = async (numOfUrls, playlistUrl) => {
   } else {
     startIndex = 0
   }
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
   const page = await browser.newPage()
   await page.goto(playlistUrl)
   await page.waitForSelector('ytd-playlist-panel-video-renderer')
