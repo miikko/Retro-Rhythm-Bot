@@ -18,6 +18,9 @@ const checkPrerequisites = (message) => {
 }
 
 const play = async (message) => {
+  if (isPlaying) {
+    return
+  }
   if (queue.getLength() === 0) {
     return message.reply(
       'The song queue is empty, add songs to play them.')
@@ -44,6 +47,7 @@ const play = async (message) => {
   isPlaying = false
   currUrl = null
   dispatcher = null
+  voiceConnection.channel.leave()
 }
 
 const skip = (howMany) => {
