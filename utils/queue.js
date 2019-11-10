@@ -1,7 +1,7 @@
 const queue = []
 
-const enqueue = (url) => {
-  queue.push(url)
+const enqueue = (audio) => {
+  queue.push(audio)
   return queue.length
 }
 
@@ -9,8 +9,8 @@ const dequeue = () => {
   return queue.shift()
 }
 
-const pushToFront = (url) => {
-  return queue.unshift(url)
+const pushToFront = (audio) => {
+  return queue.unshift(audio)
 }
 
 const peek = () => {

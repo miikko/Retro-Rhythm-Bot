@@ -16,10 +16,7 @@ module.exports = {
       if (!repeatTimes || repeatTimes > 5 || repeatTimes < 0) {
         return message.reply('you provided an invalid !repeat argument')
       }
-    } try {
-      songPlayer.repeat(repeatTimes)
-    } catch (exception) {
-      message.reply(exception.message)
     }
+    songPlayer.repeat(message, repeatTimes)
   },
 }

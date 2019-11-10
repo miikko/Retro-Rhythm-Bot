@@ -8,16 +8,21 @@ module.exports = {
   usage: '(<number of songs to remove, default 1>)',
   cooldown: 1,
   execute(message, args) {
+    if (!songPlayer.checkPrerequisites(message)) {
+      return
+    }
     let songsSkipped
     if (args.length > 0) {
       const songsToSkip = parseInt(args[0])
       if (!songsToSkip || songsToSkip > 10 || songsToSkip < 0) {
         return message.reply('you provided an invalid !skip argument')
       }
-      songsSkipped = songPlayer.skip(songsToSkip)
+      songsSkipped = songPlayer.skip(songsToSkip, message)
     } else {
-      songsSkipped = songPlayer.skip(1)
+      songsSkipped = songPlayer.skip(1, message)
     }
-    message.channel.send(`${songsSkipped} song(s) were skipped.`)
+    if (songsSkipped > 0) {
+      message.channel.send(`${songsSkipped} song(s) were skipped.`)
+    }
   },
 }

@@ -16,8 +16,8 @@ module.exports = {
     if (!url) {
       return
     }
-    message.reply(`song added, ${queue.enqueue(url)} song(s) in queue`)
+    message.reply(`song added, ${queue.enqueue({ path: url, type: 'url' })} song(s) in queue`)
     await songPlayer.connectTo(message)
-    songPlayer.play(message.channel)
+    songPlayer.play(message)
   },
 }

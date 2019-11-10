@@ -3,6 +3,8 @@ const Discord = require('discord.js')
 const { token } = require('./utils/config')
 const { authorOnCooldown } = require('./utils/cooldownManager')
 
+global.rootPath = __dirname
+
 const client = new Discord.Client()
 client.commands = new Discord.Collection()
 fs.readdirSync('./commands')

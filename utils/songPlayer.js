@@ -1,13 +1,17 @@
 const queue = require('./queue')
 const ytUtil = require('./youtubeUtil')
 
-let isPlaying = false
-let dispatcher
-let currUrl
+let currAudio
 
 const checkPrerequisites = (message) => {
   if (message.channel.type !== 'text') {
     message.reply('you need to use this command in a text channel!')
+    return false
+  }
+  const callerChannel = message.member.voiceChannel
+  const botConnection = message.guild.voiceConnection
+  if (botConnection && botConnection.channel !== callerChannel) {
+    message.reply('you need to be in the same voice channel with the bot to use this command')
     return false
   }
   if (!message.member.voiceChannel) {
@@ -18,42 +22,52 @@ const checkPrerequisites = (message) => {
 }
 
 const play = async (message) => {
-  if (isPlaying) {
+  const voiceConnection = message.guild.voiceConnection
+  if (!voiceConnection) {
+    return message.reply(
+      'the bot attempted to play songs before joining a voice channel')
+  } else if (voiceConnection.dispatcher) {
     return
   }
   if (queue.getLength() === 0) {
     return message.reply(
       'The song queue is empty, add songs to play them.')
   }
-  const voiceConnection = message.guild.voiceConnection
-  if (!voiceConnection) {
-    return message.reply(
-      'the bot attempted to play songs before joining a voice channel')
-  }
-  isPlaying = true
-  while (queue.getLength() > 0 && isPlaying) {
-    const url = queue.dequeue()
-    currUrl = url
-    const stream = ytUtil.getAudioStreamFromUrl(url)
+  while (queue.getLength() > 0 && message.guild.voiceConnection) {
+    const audio = queue.dequeue()
+    const url = audio.path
+    let stream
+    if (audio.type === 'url') {
+      stream = ytUtil.getAudioStreamFromUrl(url)
+    }
     const playPromise = new Promise((resolve, reject) => {
       //channel.send(`Now playing ${url}!`)
-      dispatcher = voiceConnection.playStream(stream)
+      let dispatcher
+      if (audio.type === 'url') {
+        dispatcher = voiceConnection.playStream(stream)
+      } else if (audio.type === 'file') {
+        dispatcher = voiceConnection.playFile(url)
+      }
+      currAudio = audio
       dispatcher.on('end', () => {
         resolve()
       })
     })
     const result = await playPromise
   }
-  isPlaying = false
-  currUrl = null
-  dispatcher = null
+  currAudio = null
   voiceConnection.channel.leave()
 }
 
-const skip = (howMany) => {
+const skip = (howMany, message) => {
+  const botConnection = message.guild.voiceConnection
+  if (!botConnection || !botConnection.dispatcher) {
+    return 0
+  }
+  const dispatcher = botConnection.dispatcher
   let i = 0
   let songsSkipped = howMany > queue.getLength() ? queue.getLength() : howMany
-  if (dispatcher && isPlaying) {
+  if (currAudio) {
     dispatcher.pause()
     i++
     if (howMany > queue.getLength()) {
@@ -63,7 +77,7 @@ const skip = (howMany) => {
   for (; i < howMany; i++) {
     queue.dequeue()
   }
-  if (dispatcher) {
+  if (currAudio) {
     dispatcher.end()
   }
   return songsSkipped
@@ -75,32 +89,40 @@ const clearQueue = () => {
   }
 }
 
-const repeat = (times) => {
-  if (!isPlaying && queue.getLength() === 0) {
-    throw new Error('cannot repeat song since there are no songs playing or in queue.')
+const repeat = (message, times) => {
+  const botConnection = message.guild.voiceConnection
+  if (!botConnection) {
+    return message.reply('canont repeat any songs since bot is not in a voice channel!')
   }
-  let songUrlToRepeat = queue.peek()
-  if (dispatcher && isPlaying) {
-    songUrlToRepeat = currUrl
+  if (!currAudio && queue.getLength() === 0) {
+    return message.reply('cannot repeat song since there are no songs playing or in queue.')
+  }
+  let audioToRepeat = currAudio
+  if (!audioToRepeat) {
+    audioToRepeat = queue.peek()
   }
   for (let i = 0; i < times; i++) {
-    queue.pushToFront(songUrlToRepeat)
+    queue.pushToFront(audioToRepeat)
   }
 }
 
 const leave = (message) => {
   const botConnection = message.guild.voiceConnection
+  const dispatcher = botConnection.dispatcher
   if (!botConnection) {
     return message.reply('this bot is not in a channel that it can leave from.')
   }
-  isPlaying = false
   if (dispatcher) {
+    clearQueue()
     dispatcher.end()
   }
   botConnection.channel.leave()
 }
 
 const connectTo = async (message) => {
+  if (currAudio) {
+    return
+  }
   const callerChannel = message.member.voiceChannel
   const botConnection = message.guild.voiceConnection
   if (botConnection) {
@@ -108,11 +130,8 @@ const connectTo = async (message) => {
     if (callerChannel === botChannel) {
       return
     }
-    if (isPlaying) {
-      isPlaying = false
-      dispatcher.end()
-      botChannel.leave()
-    }
+    message.guild.voiceConnection.dispatcher.end()
+    botChannel.leave()
   }
   await callerChannel.join()
 }

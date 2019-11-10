@@ -4,7 +4,7 @@ const queue = require('../utils/queue')
 
 module.exports = {
   name: 'playlist',
-  description: 'Adds 10 songs from the given playlist to the ' +
+  description: 'Adds 15 songs from the given playlist to the ' +
   'song queue and starts playing if the queue is empty',
   usage: '<playlist url or name>',
   args: true,
@@ -16,10 +16,10 @@ module.exports = {
     if (!playlistUrl) {
       return
     }
-    const urls = await ytUtil.getUrlsFromPlaylist(10, playlistUrl)
-    urls.map(url => queue.enqueue(url))
+    const urls = await ytUtil.getUrlsFromPlaylist(15, playlistUrl)
+    urls.map(url => queue.enqueue({ path: url, type: 'url' }))
     message.reply(`${urls.length} songs added, ${queue.getLength()} song(s) in queue`)
     await songPlayer.connectTo(message.member.voiceChannel)
-    songPlayer.play(message.channel)
+    songPlayer.play(message)
   },
 }
