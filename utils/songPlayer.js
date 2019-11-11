@@ -1,5 +1,6 @@
 const queue = require('./queue')
 const ytUtil = require('./youtubeUtil')
+const fs = require('fs')
 
 let currAudio
 
@@ -39,15 +40,12 @@ const play = async (message) => {
     let stream
     if (audio.type === 'url') {
       stream = ytUtil.getAudioStreamFromUrl(url)
+    } else if (audio.type === 'file') {
+      stream = fs.createReadStream(url)
     }
     const playPromise = new Promise((resolve, reject) => {
       //channel.send(`Now playing ${url}!`)
-      let dispatcher
-      if (audio.type === 'url') {
-        dispatcher = voiceConnection.playStream(stream)
-      } else if (audio.type === 'file') {
-        dispatcher = voiceConnection.playFile(url)
-      }
+      const dispatcher = voiceConnection.playStream(stream)
       currAudio = audio
       dispatcher.on('end', () => {
         resolve()
