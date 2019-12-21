@@ -43,7 +43,7 @@ const play = async (message) => {
         stream = ytUtil.getAudioStreamFromUrl(url)
       } catch (exception) {
         console.log(`Unable to get audiostream for url: ${url}`)
-        message.send("Unable to play next song, skipping...")
+        message.channel.send("Unable to play next song, skipping...")
         continue
       }
     } else if (audio.type === 'file') {
