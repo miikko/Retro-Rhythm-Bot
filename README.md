@@ -1,6 +1,6 @@
 # Retro-Rhythm-Bot
 
-Plays audio from youtube videos and certain files (check resources folder). Uses puppeteer to fetch video urls from Youtube and feeds them to ytdl that generates audio streams from them.
+Plays audio from youtube videos and has some other minor features. Uses puppeteer to fetch video urls from Youtube and feeds them to ytdl that generates audio streams from them.
 
 ## Requirements
 
@@ -28,5 +28,7 @@ TODO
 
 
 ## Deploying to heroku
+
+To deploy, run this command: `npm deploy`
 
 A special buildpack is required because of puppeteer. Check [this](https://elements.heroku.com/buildpacks/jontewks/puppeteer-heroku-buildpack).
